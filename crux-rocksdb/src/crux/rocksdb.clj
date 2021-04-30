@@ -109,6 +109,7 @@
 
   Closeable
   (close [_]
+    (.cancelAllBackgroundWork db true)
     (cio/try-close db)
     (cio/try-close options)
     (cio/try-close write-options)
