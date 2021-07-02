@@ -9,21 +9,23 @@
 (defn ->registry [_]
   (dropwizard/new-registry))
 
-(defn ->metrics {::sys/deps {:registry ::registry
-                             :crux/node :crux/node
+(defn ->metrics {::sys/deps {:crux/node        :crux/node
                              :crux/index-store :crux/index-store
-                             :crux/bus :crux/bus}
-                 ::sys/args {:with-index-store-metrics? {:doc "Include metrics on the index-store"
+                             :crux/bus         :crux/bus}
+                 ::sys/args {:registry                  {:doc       "Your own com.codahale.metrics.MetricsRegistry"
+                                                         :default   (dropwizard/new-registry)
+                                                         :required? true}
+                             :with-index-store-metrics? {:doc     "Include metrics on the index-store"
                                                          :default true
-                                                         :spec ::sys/boolean}
-                             :with-query-metrics? {:doc "Include metrics on queries"
-                                                   :default true
-                                                   :spec ::sys/boolean}}}
+                                                         :spec    ::sys/boolean}
+                             :with-query-metrics?       {:doc     "Include metrics on queries"
+                                                         :default true
+                                                         :spec    ::sys/boolean}}}
   [{:keys [registry with-index-store-metrics? with-query-metrics?] :as opts}]
   (let [deps (select-keys opts #{:crux/node :crux/index-store :crux/bus})]
     {:registry (cond-> registry
                  with-index-store-metrics? (doto (index-store-metrics/assign-listeners deps))
-                 with-query-metrics? (doto (query-metrics/assign-listeners deps)))}))
+                 with-query-metrics?       (doto (query-metrics/assign-listeners deps)))}))
 
 (defn- ns->ms [time-ns]
   (/ time-ns 1e6))
